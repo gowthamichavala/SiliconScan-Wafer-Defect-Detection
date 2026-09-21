@@ -1,0 +1,82 @@
+{
+  "dataset_path": "C:\\Users\\vitap\\Documents\\Wafer detection\\ml\\dataset",
+  "total_images": 1350,
+  "classes": {
+    "Center": 150,
+    "Donut": 150,
+    "Edge-Loc": 150,
+    "Edge-Ring": 150,
+    "Loc": 150,
+    "Near-full": 150,
+    "Normal": 150,
+    "Random": 150,
+    "Scratch": 150
+  },
+  "image_shapes": {
+    "Center": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Donut": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Edge-Loc": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Edge-Ring": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Loc": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Near-full": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Normal": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Random": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    },
+    "Scratch": {
+      "size": [
+        64,
+        64
+      ],
+      "mode": "L"
+    }
+  },
+  "valid": true,
+  "warnings": []
+}

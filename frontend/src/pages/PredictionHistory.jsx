@@ -11,7 +11,7 @@ import {
   Gauge,
   Info
 } from 'lucide-react'
-import { getHistory, deleteHistoryItem, clearAllHistory } from '../services/api'
+import { getHistory, deleteHistoryItem, clearAllHistory, getBackendUrl } from '../services/api'
 
 export default function PredictionHistory() {
   const [items, setItems] = useState([])
@@ -179,7 +179,7 @@ export default function PredictionHistory() {
                       <td className="py-3">
                         {item.image_url ? (
                           <img
-                            src={item.image_url}
+                            src={getBackendUrl(item.image_url)}
                             alt="wafer"
                             className="w-9 h-9 rounded border border-slate-700 object-cover bg-black"
                           />
@@ -279,7 +279,7 @@ export default function PredictionHistory() {
                 <span className="text-xs font-mono text-slate-400 mb-2">Original Wafer</span>
                 {selectedRecord.image_url ? (
                   <img
-                    src={selectedRecord.image_url}
+                    src={getBackendUrl(selectedRecord.image_url)}
                     alt="Original"
                     className="w-44 h-44 rounded-lg object-contain bg-black border border-slate-800"
                   />
@@ -294,7 +294,7 @@ export default function PredictionHistory() {
                 <span className="text-xs font-mono text-cyan-400 mb-2">Grad-CAM Activation Heatmap</span>
                 {selectedRecord.heatmap_url ? (
                   <img
-                    src={selectedRecord.heatmap_url}
+                    src={getBackendUrl(selectedRecord.heatmap_url)}
                     alt="Grad-CAM"
                     className="w-44 h-44 rounded-lg object-contain bg-black border border-cyan-500/30 glow-cyan"
                   />

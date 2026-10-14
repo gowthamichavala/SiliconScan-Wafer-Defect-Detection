@@ -11,7 +11,7 @@ import {
   ScanEye,
   RefreshCw
 } from 'lucide-react'
-import { getHistoryStats, getHistory, getMetrics } from '../services/api'
+import { getHistoryStats, getHistory, getMetrics, getBackendUrl } from '../services/api'
 
 export default function Dashboard({ onNavigate }) {
   const [stats, setStats] = useState(null)
@@ -288,7 +288,7 @@ export default function Dashboard({ onNavigate }) {
                     <tr key={row.id} className="hover:bg-slate-800/30 transition-colors">
                       <td className="py-2.5">
                         {row.image_url ? (
-                          <img src={row.image_url} alt="wafer" className="w-8 h-8 rounded border border-slate-700 object-cover bg-black" />
+                          <img src={getBackendUrl(row.image_url)} alt="wafer" className="w-8 h-8 rounded border border-slate-700 object-cover bg-black" />
                         ) : (
                           <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-[10px] text-slate-500 font-mono">
                             N/A

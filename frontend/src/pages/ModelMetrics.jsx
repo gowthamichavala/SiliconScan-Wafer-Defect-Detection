@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   FileText
 } from 'lucide-react'
-import { getMetrics } from '../services/api'
+import { getMetrics, getBackendUrl } from '../services/api'
 
 export default function ModelMetrics() {
   const [metrics, setMetrics] = useState(null)
@@ -128,7 +128,7 @@ export default function ModelMetrics() {
 
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center">
                 <img
-                  src={metrics.confusion_matrix_image_url || '/results/confusion_matrix.png'}
+                  src={getBackendUrl(metrics.confusion_matrix_image_url || '/results/confusion_matrix.png')}
                   alt="Confusion Matrix"
                   className="w-full max-h-[460px] object-contain rounded-lg"
                 />

@@ -1,5 +1,16 @@
 const BASE_URL = 'https://siliconscan-wafer-defect-detection.onrender.com'
 
+/**
+ * Resolves an image URL returned by the backend.
+ * - Relative paths (starting with "/") are prefixed with the backend base URL.
+ * - Blob URLs, data URIs, or already-absolute URLs are returned as-is.
+ */
+export function getBackendUrl(path) {
+  if (!path) return null
+  if (path.startsWith('/')) return `${BASE_URL}${path}`
+  return path // blob:, data:, https:// — already absolute
+}
+
 export async function checkHealth() {
   const res = await fetch(`${BASE_URL}/api/health`)
   if (!res.ok) {

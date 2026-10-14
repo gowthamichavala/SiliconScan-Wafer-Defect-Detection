@@ -13,7 +13,7 @@ import {
   Eye,
   Check
 } from 'lucide-react'
-import { predictSingle, getSamples } from '../services/api'
+import { predictSingle, getSamples, getBackendUrl } from '../services/api'
 
 export default function SingleInspection() {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -53,7 +53,7 @@ export default function SingleInspection() {
     try {
       setActiveSample(sample.class_name)
       setError(null)
-      const res = await fetch(sample.image_url)
+      const res = await fetch(getBackendUrl(sample.image_url))
       const blob = await res.blob()
       const file = new File([blob], sample.filename, { type: 'image/png' })
       handleFileSelect(file)
@@ -231,7 +231,7 @@ export default function SingleInspection() {
                       <span className="text-xs font-mono text-cyan-400 mb-2">Grad-CAM Heatmap</span>
                       {result?.heatmap_url ? (
                         <img
-                          src={result.heatmap_url}
+                          src={getBackendUrl(result.heatmap_url)}
                           alt="Grad-CAM Heatmap"
                           className="w-48 h-48 rounded-lg object-contain bg-black border border-cyan-500/30 glow-cyan"
                         />
@@ -254,7 +254,7 @@ export default function SingleInspection() {
                       />
                       {result?.heatmap_url && (
                         <img
-                          src={result.heatmap_url}
+                          src={getBackendUrl(result.heatmap_url)}
                           alt="Overlay"
                           className="absolute inset-0 w-full h-full object-contain mix-blend-screen transition-opacity"
                           style={{ opacity: overlayAlpha / 100 }}

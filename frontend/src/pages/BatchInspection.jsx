@@ -11,7 +11,7 @@ import {
   RefreshCw,
   AlertTriangle
 } from 'lucide-react'
-import { predictBatch } from '../services/api'
+import { predictBatch, getBackendUrl } from '../services/api'
 
 export default function BatchInspection() {
   const [files, setFiles] = useState([])
@@ -224,7 +224,7 @@ export default function BatchInspection() {
                       <td className="py-2.5">
                         {row.image_url ? (
                           <img
-                            src={row.image_url}
+                            src={getBackendUrl(row.image_url)}
                             alt="wafer"
                             className="w-8 h-8 rounded border border-slate-700 object-cover bg-black"
                           />

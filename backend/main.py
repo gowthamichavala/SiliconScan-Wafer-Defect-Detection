@@ -156,17 +156,34 @@ async def predict_batch(files: List[UploadFile] = File(...)):
     if len(files) == 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No files provided.")
 
+    valid_exts = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff"}
     items = []
+    errors = []
     normal_count = 0
     defective_count = 0
 
     for file in files:
+        fname = file.filename or "unknown"
+        ext = Path(fname).suffix.lower()
+
+        if ext not in valid_exts:
+            err_msg = f"Unsupported image format '{ext}'. Supported: PNG, JPG, BMP, WEBP, TIFF"
+            print(f"[Batch] Validation failed for {fname}: {err_msg}")
+            errors.append({"filename": fname, "error": err_msg})
+            continue
+
         try:
             contents = await file.read()
-            res = engine.predict(contents, filename=file.filename, uploads_dir=UPLOADS_DIR)
+            if not contents:
+                err_msg = "Empty file received"
+                print(f"[Batch] {fname}: {err_msg}")
+                errors.append({"filename": fname, "error": err_msg})
+                continue
+
+            res = engine.predict(contents, filename=fname, uploads_dir=UPLOADS_DIR)
 
             record = save_prediction(
-                filename=file.filename,
+                filename=fname,
                 predicted_class=res["predicted_class"],
                 confidence=res["confidence"],
                 inference_time_ms=res["inference_time_ms"],
@@ -178,7 +195,7 @@ async def predict_batch(files: List[UploadFile] = File(...)):
 
             res["id"] = record["id"]
             res["timestamp"] = record["timestamp"]
-            res["filename"] = file.filename
+            res["filename"] = fname
             items.append(res)
 
             if res["is_defective"]:
@@ -187,18 +204,28 @@ async def predict_batch(files: List[UploadFile] = File(...)):
                 normal_count += 1
 
         except Exception as e:
-            print(f"[Batch] Error processing {file.filename}: {e}")
-            continue
+            err_msg = str(e)
+            print(f"[Batch] Error processing {fname}: {err_msg}")
+            errors.append({"filename": fname, "error": err_msg})
 
     total_proc = len(items)
+    failed_proc = len(errors)
     defect_rate = round((defective_count / total_proc) * 100, 2) if total_proc > 0 else 0.0
 
+    batch_status = "success"
+    if total_proc == 0 and failed_proc > 0:
+        batch_status = "failed"
+    elif failed_proc > 0:
+        batch_status = "partial_success"
+
     return {
-        "status": "success",
+        "status": batch_status,
         "total_processed": total_proc,
         "normal_count": normal_count,
         "defective_count": defective_count,
         "defect_rate": defect_rate,
+        "failed_count": failed_proc,
+        "errors": errors,
         "items": items
     }
 

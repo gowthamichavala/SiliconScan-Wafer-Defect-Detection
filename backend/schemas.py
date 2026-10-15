@@ -17,12 +17,18 @@ class PredictionItem(BaseModel):
 class PredictionResponse(PredictionItem):
     status: str = "success"
 
+class BatchErrorItem(BaseModel):
+    filename: str
+    error: str
+
 class BatchPredictionResponse(BaseModel):
     status: str = "success"
     total_processed: int
     normal_count: int
     defective_count: int
     defect_rate: float
+    failed_count: int = 0
+    errors: List[BatchErrorItem] = []
     items: List[PredictionItem]
 
 class HistoryResponse(BaseModel):

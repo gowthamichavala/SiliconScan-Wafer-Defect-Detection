@@ -9,7 +9,8 @@ import {
   Layers,
   Clock,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react'
 import { predictBatch, getBackendUrl } from '../services/api'
 
@@ -22,7 +23,17 @@ export default function BatchInspection() {
 
   const handleFilesSelect = (selectedList) => {
     if (!selectedList || selectedList.length === 0) return
-    setFiles(Array.from(selectedList))
+    const incoming = Array.from(selectedList)
+
+    setFiles((prev) => {
+      const existingKeys = new Set(
+        prev.map((f) => `${f.name}-${f.size}-${f.lastModified}`)
+      )
+      const uniqueIncoming = incoming.filter(
+        (f) => !existingKeys.has(`${f.name}-${f.size}-${f.lastModified}`)
+      )
+      return [...prev, ...uniqueIncoming]
+    })
     setBatchResult(null)
     setError(null)
   }
@@ -31,6 +42,20 @@ export default function BatchInspection() {
     e.preventDefault()
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFilesSelect(e.dataTransfer.files)
+    }
+  }
+
+  const removeFile = (indexToRemove) => {
+    setFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove))
+    setBatchResult(null)
+  }
+
+  const clearAllFiles = () => {
+    setFiles([])
+    setBatchResult(null)
+    setError(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -88,6 +113,19 @@ export default function BatchInspection() {
         </p>
       </div>
 
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          handleFilesSelect(e.target.files)
+          e.target.value = ''
+        }}
+      />
+
       {/* Upload Zone */}
       <div
         onDragOver={(e) => e.preventDefault()}
@@ -95,29 +133,84 @@ export default function BatchInspection() {
         onClick={() => fileInputRef.current?.click()}
         className="p-8 rounded-2xl bg-slate-900/60 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900/80 transition-all cursor-pointer flex flex-col items-center justify-center text-center group"
       >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => handleFilesSelect(e.target.files)}
-        />
         <div className="w-14 h-14 rounded-2xl bg-slate-800 group-hover:bg-cyan-500/10 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-colors mb-3">
           <UploadCloud className="w-7 h-7" />
         </div>
         <div className="text-sm font-semibold text-white group-hover:text-cyan-300">
-          {files.length > 0 ? `${files.length} wafer images selected` : 'Drop multiple wafer images here'}
+          {files.length > 0
+            ? `${files.length} wafer image${files.length > 1 ? 's' : ''} selected`
+            : 'Drop multiple wafer images here'}
         </div>
         <p className="text-xs text-slate-400 mt-1">
-          Select or drag multiple wafer files to run simultaneous batch classification
+          {files.length > 0
+            ? 'Click or drop additional wafer files to add to this lot'
+            : 'Select or drag multiple wafer files to run simultaneous batch classification'}
         </p>
       </div>
+
+      {/* Staged Files Preview */}
+      {files.length > 0 && (
+        <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              Staged Wafers ({files.length})
+            </span>
+            <button
+              type="button"
+              onClick={clearAllFiles}
+              className="text-rose-400 hover:text-rose-300 text-xs font-semibold transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
+            {files.map((file, idx) => (
+              <span
+                key={`${file.name}-${idx}`}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs font-mono text-slate-200"
+              >
+                <span className="truncate max-w-[180px]">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    removeFile(idx)
+                  }}
+                  className="text-slate-400 hover:text-rose-400 transition-colors"
+                  title="Remove wafer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{error}</span>
+        </div>
+      )}
+
+      {/* Batch Processing Errors / Warnings */}
+      {batchResult?.failed_count > 0 && (
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex flex-col gap-1.5">
+          <div className="flex items-center gap-2 font-semibold text-amber-400">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>
+              {batchResult.failed_count} wafer image{batchResult.failed_count > 1 ? 's' : ''} failed to process:
+            </span>
+          </div>
+          <ul className="list-disc list-inside text-slate-300 ml-1 space-y-0.5">
+            {batchResult.errors.map((err, idx) => (
+              <li key={idx}>
+                <span className="font-mono text-white">{err.filename}</span>: {err.error}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -195,7 +288,9 @@ export default function BatchInspection() {
               <span>Yield Rate</span>
             </div>
             <div className="text-2xl font-bold font-mono text-indigo-300">
-              {(100 - batchResult.defect_rate).toFixed(1)}%
+              {batchResult.total_processed > 0
+                ? `${(100 - batchResult.defect_rate).toFixed(1)}%`
+                : '0.0%'}
             </div>
           </div>
         </div>
